@@ -38,7 +38,7 @@ export function makeLogStore({ workDirPath, syncInterval, s3Config, chunkSize, i
             let seqNum = header?.seqNum;
             let entries = parseChunk(payload);
             while (entries.length < offset + limit) {
-                if (seqNum == null) {
+                if (seqNum == undefined) {
                     seqNum = await s3Store.getMaxSeqNum(fileName) + 1;
                     await workFile.write(seqNum, payload);
                 }

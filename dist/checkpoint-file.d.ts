@@ -1,5 +1,5 @@
 export declare function makeCheckpointFile(filePath: string): {
     filePath: string;
-    getTime(): Promise<Date | null>;
+    mtime(): Promise<Date | undefined>;
     touch(): Promise<void>;
 };

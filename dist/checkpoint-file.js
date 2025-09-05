@@ -4,14 +4,14 @@ import util from "util";
 export function makeCheckpointFile(filePath) {
     return {
         filePath,
-        async getTime() {
+        async mtime() {
             try {
                 const { mtime } = await fsp.stat(filePath);
                 return mtime;
             }
             catch (err) {
                 if (err.code == 'ENOENT')
-                    return null;
+                    return undefined;
                 else
                     throw err;
             }

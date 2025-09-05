@@ -12,8 +12,8 @@ export function makeBackupTask({ workDir, checkpointFile, s3Store, chunkSize }: 
 }) {
   return {
     async run() {
-      const checkpointTime = await checkpointFile.getTime()
-      if (checkpointTime != null) {
+      const checkpointTime = await checkpointFile.mtime()
+      if (checkpointTime) {
         const fileNames = await workDir.listChanges(checkpointFile.filePath)
         await checkpointFile.touch()
         const filesBackedUp = []
@@ -52,7 +52,7 @@ export function makeBackupTask({ workDir, checkpointFile, s3Store, chunkSize }: 
         return { fileName, hasHeader: false, seqNum, size: payload.length, gzipSize: payloadGzipped.length }
       }
     } else {
-      return { fileName, hasHeader: header != null, seqNum: header?.seqNum, size: 0, gzipSize: 0 }
+      return { fileName, hasHeader: header != undefined, seqNum: header?.seqNum, size: 0, gzipSize: 0 }
     }
   }
 }
