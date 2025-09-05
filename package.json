@@ -24,7 +24,7 @@
     "test": "node --enable-source-maps dist/index.test.js"
   },
   "devDependencies": {
-    "@service-broker/test-utils": "^1.0.5",
+    "@service-broker/test-utils": "^1.1.2",
     "@types/node": "^24.3.0",
     "typescript": "^5.9.2"
   },
