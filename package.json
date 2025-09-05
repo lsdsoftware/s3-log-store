@@ -1,0 +1,35 @@
+{
+  "name": "@lsdsoftware/s3-log-store",
+  "version": "1.0.0",
+  "description": "Efficiently store and retrieve log-structured data (append only) in S3",
+  "keywords": [
+    "log-structured",
+    "s3",
+    "storage"
+  ],
+  "homepage": "https://github.com/lsdsoftware/s3-log-store#readme",
+  "bugs": {
+    "url": "https://github.com/lsdsoftware/s3-log-store/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lsdsoftware/s3-log-store.git"
+  },
+  "license": "MIT",
+  "author": "Hai Phan <hai.phan@gmail.com>",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --enable-source-maps dist/index.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.873.0",
+    "multilayer-async-cache-builder": "^3.0.0",
+    "rxjs": "^7.8.2"
+  }
+}

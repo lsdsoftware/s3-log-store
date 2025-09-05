@@ -1,0 +1,1 @@
+{"version":3,"file":"delete-inactive-task.js","sourceRoot":"","sources":["../src/delete-inactive-task.ts"],"names":[],"mappings":"AAEA,MAAM,UAAU,sBAAsB,CAAC,EAAE,OAAO,EAAE,eAAe,EAGhE;IACC,OAAO;QACL,KAAK,CAAC,GAAG;YACP,MAAM,SAAS,GAAG,MAAM,OAAO,CAAC,cAAc,CAAC,eAAe,CAAC,CAAA;YAC/D,OAAO,EAAE,YAAY,EAAE,SAAS,EAAE,CAAA;QACpC,CAAC;KACF,CAAA;AACH,CAAC"}
