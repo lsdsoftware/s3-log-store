@@ -1,12 +1,12 @@
-import { makeWorkDir } from "./work-dir.js";
-import { describe, expect, objectHaving } from "@service-broker/test-utils"
-import fsp from "fs/promises"
+import { describe, expect } from "@service-broker/test-utils";
+import fsp from "fs/promises";
+import os from "os";
 import path from "path";
-import os from "os"
+import { makeWorkDir } from "./work-dir.js";
 
-const workDirPath = path.join(os.tmpdir(), "s3logstore-testworkdir")
 
 describe('work-dir', ({ beforeEach, afterEach, test }) => {
+  const workDirPath = path.join(os.tmpdir(), "s3logstore-testworkdir-" + Math.random().toString(36).slice(2))
   let workDir: ReturnType<typeof makeWorkDir>
 
   beforeEach(async () => {

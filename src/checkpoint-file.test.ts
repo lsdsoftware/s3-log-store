@@ -5,9 +5,9 @@ import os from "os";
 import path from "path";
 import { makeCheckpointFile } from "./checkpoint-file.js";
 
-const filePath = path.join(os.tmpdir(), 's3logstore-testcheckpointfile')
 
 describe('checkpoint-file', ({ beforeEach, test }) => {
+  const filePath = path.join(os.tmpdir(), 's3logstore-testcheckpointfile-' + Math.random().toString(36).slice(2))
   const file = makeCheckpointFile(filePath)
 
   beforeEach(async () => {

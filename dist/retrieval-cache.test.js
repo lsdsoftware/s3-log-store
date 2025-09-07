@@ -2,10 +2,10 @@ import { describe, expect } from "@service-broker/test-utils";
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { makeRetrievalCache } from "./retrieval-cache.js";
 import * as rxjs from "rxjs";
-const cacheFolder = path.join(os.tmpdir(), 's3logstore-testretrievalcache');
+import { makeRetrievalCache } from "./retrieval-cache.js";
 describe('retrieval-cache', ({ beforeEach, afterEach, test }) => {
+    const cacheFolder = path.join(os.tmpdir(), 's3logstore-testretrievalcache-' + Math.random().toString(36).slice(2));
     let cache;
     let job$;
     let jobSub;

@@ -9,10 +9,10 @@ import { makeDeleteInactiveTask } from "./delete-inactive-task.js";
 import { makeRetrievalCache } from "./retrieval-cache.js";
 import { makeS3Store } from "./s3-store.js";
 import { makeWorkDir } from "./work-dir.js";
-export function makeLogStore({ workDirPath, syncInterval, s3Config, chunkSize, inactiveTtlDays, retrievalCacheConfig, }) {
+export function makeLogStore({ workDirPath, syncInterval, s3StoreConfig, chunkSize, inactiveTtlDays, retrievalCacheConfig, }) {
     const workDir = makeWorkDir(workDirPath);
     const checkpointFile = makeCheckpointFile(path.join(workDirPath, 'checkpoint'));
-    const s3Store = makeS3Store(s3Config);
+    const s3Store = makeS3Store(s3StoreConfig);
     const deleteInactiveTask = makeDeleteInactiveTask({ workDir, inactiveTtlDays });
     const backupTask = makeBackupTask({ workDir, checkpointFile, s3Store, chunkSize });
     const retrievalCache = makeRetrievalCache(retrievalCacheConfig);

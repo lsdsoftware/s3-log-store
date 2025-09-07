@@ -1,3 +1,4 @@
+import * as s3 from "@aws-sdk/client-s3"
 import { Fetch } from "multilayer-async-cache-builder"
 import path from "path"
 import * as rxjs from "rxjs"
@@ -13,16 +14,15 @@ import { makeWorkDir } from "./work-dir.js"
 export function makeLogStore<T>({
   workDirPath,
   syncInterval,
-  s3Config,
+  s3StoreConfig,
   chunkSize,
   inactiveTtlDays,
   retrievalCacheConfig,
 }: {
   workDirPath: string
   syncInterval: number
-  s3Config: {
-    profile: string
-    region: string
+  s3StoreConfig: {
+    client: s3.S3Client
     bucket: string
     folder: string
   }
@@ -36,7 +36,7 @@ export function makeLogStore<T>({
 }) {
   const workDir = makeWorkDir(workDirPath)
   const checkpointFile = makeCheckpointFile(path.join(workDirPath, 'checkpoint'))
-  const s3Store = makeS3Store(s3Config)
+  const s3Store = makeS3Store(s3StoreConfig)
   const deleteInactiveTask = makeDeleteInactiveTask({ workDir, inactiveTtlDays })
   const backupTask = makeBackupTask({ workDir, checkpointFile, s3Store, chunkSize })
 

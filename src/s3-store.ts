@@ -1,26 +1,24 @@
-import { ListObjectsV2CommandOutput, S3 } from "@aws-sdk/client-s3"
+import * as s3 from "@aws-sdk/client-s3"
 
-export function makeS3Store({ profile, region, bucket, folder }: {
-  profile: string
-  region: string
+export function makeS3Store({ client, bucket, folder }: {
+  client: s3.S3Client
   bucket: string
   folder: string
 }) {
-  const s3 = new S3({ profile, region })
-
   return {
-    url: `s3://${bucket}/${folder}`,
+    bucket,
+    folder,
 
     async getMaxSeqNum(fileName: string): Promise<number> {
       const Prefix = folder + '/' + fileName + '/'
-      let result: ListObjectsV2CommandOutput | undefined
+      let result: s3.ListObjectsV2CommandOutput | undefined
       let maxSeqNum = 0
       do {
-        result = await s3.listObjectsV2({
+        result = await client.send(new s3.ListObjectsV2Command({
           Bucket: bucket,
           Prefix,
           ContinuationToken: result?.ContinuationToken
-        })
+        }))
         for (const { Key } of result.Contents ?? []) {
           const seqNum = Number(Key!.slice(Prefix.length))
           if (seqNum > maxSeqNum) maxSeqNum = seqNum
@@ -30,18 +28,18 @@ export function makeS3Store({ profile, region, bucket, folder }: {
     },
 
     async putFile(fileName: string, seqNum: number, payload: Buffer) {
-      await s3.putObject({
+      await client.send(new s3.PutObjectCommand({
         Bucket: bucket,
         Key: folder + '/' + fileName + '/' + seqNum,
         Body: payload
-      })
+      }))
     },
 
     async getFile(fileName: string, seqNum: number) {
-      const result = await s3.getObject({
+      const result = await client.send(new s3.GetObjectCommand({
         Bucket: bucket,
         Key: folder + '/' + fileName + '/' + seqNum
-      })
+      }))
       const byteArray = await result.Body!.transformToByteArray()
       return Buffer.from(byteArray.buffer)
     }

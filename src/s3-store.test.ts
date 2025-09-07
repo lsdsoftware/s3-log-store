@@ -1,48 +1,50 @@
+import * as s3 from "@aws-sdk/client-s3";
+import { describe, expect } from "@service-broker/test-utils";
 import assert from "assert";
 import { makeS3Store } from "./s3-store.js";
-import { afterEverything, describe, expect, objectHaving } from "@service-broker/test-utils";
-import { S3 } from "@aws-sdk/client-s3";
 
-assert(
-  process.env.S3_PROFILE &&
-  process.env.S3_REGION &&
-  process.env.S3_BUCKET &&
-  process.env.S3_FOLDER
-)
-const config = {
-  profile: process.env.S3_PROFILE,
-  region: process.env.S3_REGION,
-  bucket: process.env.S3_BUCKET,
-  folder: process.env.S3_FOLDER
-}
-const s3 = new S3(config)
-const store = makeS3Store(config)
 
-function listObjects() {
-  return s3.listObjectsV2({
-    Bucket: config.bucket,
-    Prefix: config.folder + '/'
+describe('s3-store', ({ beforeAll, afterAll, beforeEach, test }) => {
+  assert(
+    process.env.S3_PROFILE &&
+    process.env.S3_REGION &&
+    process.env.S3_BUCKET &&
+    process.env.S3_FOLDER
+  )
+  const client = new s3.S3Client({
+    profile: process.env.S3_PROFILE,
+    region: process.env.S3_REGION
   })
-}
-
-//startup
-assert.equal((await listObjects()).Contents, undefined)
-
-//shutdown
-afterEverything(async () => {
-  const { Contents } = await listObjects()
-  if (Contents?.length) {
-    await s3.deleteObjects({
-      Bucket: config.bucket,
-      Delete: {
-        Objects: Contents.map(({ Key }) => ({ Key }))
-      }
-    })
+  const store = makeS3Store({
+    client,
+    bucket: process.env.S3_BUCKET,
+    folder: process.env.S3_FOLDER
+  })
+  function listObjects() {
+    return client.send(new s3.ListObjectsV2Command({
+      Bucket: store.bucket,
+      Prefix: store.folder + '/'
+    }))
   }
-})
 
 
-describe('s3-store', ({ beforeEach, test }) => {
+  beforeAll(async () => {
+    assert.equal((await listObjects()).Contents, undefined)
+  })
+
+  afterAll(async () => {
+    const { Contents } = await listObjects()
+    if (Contents?.length) {
+      await client.send(new s3.DeleteObjectsCommand({
+        Bucket: store.bucket,
+        Delete: {
+          Objects: Contents.map(({ Key }) => ({ Key }))
+        }
+      }))
+    }
+  })
+
+
   let fileName: string
 
   beforeEach(async () => {
