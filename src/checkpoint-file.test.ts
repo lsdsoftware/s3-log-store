@@ -17,22 +17,16 @@ describe('checkpoint-file', ({ beforeEach, test }) => {
   test('main', async () => {
     expect(await file.mtime(), undefined)
 
-    const start = new Date()
-    await file.touch()
-    const first = await file.mtime()
-    await file.touch()
-    const second = await file.mtime()
+    const t1 = new Date()
+    await file.create()   //f1
+    const t2 = new Date()
+    const f1 = await file.mtime()
+    assert(f1 && f1 >= t1 && t2 >= f1)
 
-    assert(first && second)
-    expect(first, rightAfter(start))
-    expect(second, rightAfter(first))
+    const t3 = new Date()
+    await file.touch()    //f2
+    const t4 = new Date()
+    const f2 = await file.mtime()
+    assert(f2 && f2 >= t3 && t4 >= f2)
   })
 })
-
-
-function rightAfter(expected: Date) {
-  return new Expectation('rightAfter', expected, actual => {
-    assert(actual instanceof Date)
-    assert(actual > expected && actual.getTime() - expected.getTime() < 100)
-  })
-}

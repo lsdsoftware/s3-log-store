@@ -20,10 +20,13 @@ export function makeBackupTask({ workDir, checkpointFile, s3Store, chunkSize }: 
         for (const fileName of fileNames) {
           filesBackedUp.push(await backup(fileName))
         }
+        // Note that if any file is rewritten during backup (because exceed chunkSize or missing header),
+        // its mtime will be after the checkpoint time, i.e. it will be processed again in the next
+        // backup cycle (even if it hasn't changed). This is a tolerated redundancy.
         return { lastCheckpoint: checkpointTime, filesBackedUp }
       } else {
         await workDir.ensureEmpty()
-        await checkpointFile.touch()
+        await checkpointFile.create()
         return { lastCheckpoint: undefined }
       }
     }
