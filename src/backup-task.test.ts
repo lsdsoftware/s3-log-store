@@ -2,26 +2,27 @@ import { describe, expect, valueOfType } from "@service-broker/test-utils";
 import fsp from "fs/promises";
 import os from "os";
 import path from "path";
+import util from "util";
+import zlib from "zlib";
 import { makeBackupTask } from "./backup-task.js";
 import { makeCheckpointFile } from "./checkpoint-file.js";
 import { makeS3Store } from "./s3-store.js";
 import { makeWorkDir } from "./work-dir.js";
-import zlib from "zlib"
-import util from "util"
 
 
 describe('backup-task', ({ beforeEach, afterEach, test }) => {
-  const workDirPath = path.join(os.tmpdir(), "s3logstore-testworkdir-" + Math.random().toString(36).slice(2))
-  const checkpointFilePath = path.join(os.tmpdir(), 's3logstore-testcheckpointfile-' + Math.random().toString(36).slice(2))
-
+  let workDirPath: string
+  let checkpointFilePath: string
   let workDir: ReturnType<typeof makeWorkDir>
   let checkpointFile: ReturnType<typeof makeCheckpointFile>
   let s3Store: ReturnType<typeof makeS3Store>
   let backupTask: ReturnType<typeof makeBackupTask>
 
   beforeEach(async () => {
+    const randStr = Math.random().toString(36).slice(2)
+    workDirPath = path.join(os.tmpdir(), "s3logstore-testworkdir-" + randStr)
+    checkpointFilePath = path.join(os.tmpdir(), 's3logstore-testcheckpointfile-' + randStr)
     await fsp.mkdir(workDirPath)
-    await fsp.rm(checkpointFilePath, { force: true })
     workDir = makeWorkDir(workDirPath)
     checkpointFile = makeCheckpointFile(checkpointFilePath)
     s3Store = mockS3Store()
@@ -30,6 +31,7 @@ describe('backup-task', ({ beforeEach, afterEach, test }) => {
 
   afterEach(async () => {
     await fsp.rm(workDirPath, { recursive: true })
+    await fsp.rm(checkpointFilePath, { force: true })
   })
 
   test('main', async () => {
@@ -142,8 +144,6 @@ describe('backup-task', ({ beforeEach, afterEach, test }) => {
 function mockS3Store(): ReturnType<typeof makeS3Store> {
   const map = new Map<string, Map<number, Buffer>>()
   return {
-    bucket: 'b',
-    folder: 'f',
     async getMaxSeqNum(fileName) {
       const bucket = map.get(fileName)
       let max = 0

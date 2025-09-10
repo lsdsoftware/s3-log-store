@@ -6,10 +6,11 @@ import { makeWorkDir } from "./work-dir.js";
 
 
 describe('work-dir', ({ beforeEach, afterEach, test }) => {
-  const workDirPath = path.join(os.tmpdir(), "s3logstore-testworkdir-" + Math.random().toString(36).slice(2))
+  let workDirPath: string
   let workDir: ReturnType<typeof makeWorkDir>
 
   beforeEach(async () => {
+    workDirPath = path.join(os.tmpdir(), "s3logstore-testworkdir-" + Math.random().toString(36).slice(2))
     await fsp.mkdir(workDirPath)
     workDir = makeWorkDir(workDirPath)
   })

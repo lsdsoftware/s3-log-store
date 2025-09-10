@@ -1,5 +1,4 @@
 export declare function makeWorkDir(dirPath: string): {
-    dirPath: string;
     ensureEmpty(): Promise<void>;
     listChanges(checkpointFilePath: string): Promise<string[]>;
     deleteInactive(inactiveTtlDays: number): Promise<string[]>;

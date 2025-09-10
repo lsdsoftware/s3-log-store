@@ -1,4 +1,4 @@
-import { describe, expect, Expectation } from "@service-broker/test-utils";
+import { describe, expect } from "@service-broker/test-utils";
 import assert from "assert";
 import fsp from "fs/promises";
 import os from "os";
@@ -6,11 +6,16 @@ import path from "path";
 import { makeCheckpointFile } from "./checkpoint-file.js";
 
 
-describe('checkpoint-file', ({ beforeEach, test }) => {
-  const filePath = path.join(os.tmpdir(), 's3logstore-testcheckpointfile-' + Math.random().toString(36).slice(2))
-  const file = makeCheckpointFile(filePath)
+describe('checkpoint-file', ({ beforeEach, afterEach, test }) => {
+  let filePath: string
+  let file: ReturnType<typeof makeCheckpointFile>
 
   beforeEach(async () => {
+    filePath = path.join(os.tmpdir(), 's3logstore-testcheckpointfile-' + Math.random().toString(36).slice(2))
+    file = makeCheckpointFile(filePath)
+  })
+
+  afterEach(async () => {
     await fsp.rm(filePath, { force: true })
   })
 

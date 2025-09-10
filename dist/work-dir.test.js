@@ -4,9 +4,10 @@ import os from "os";
 import path from "path";
 import { makeWorkDir } from "./work-dir.js";
 describe('work-dir', ({ beforeEach, afterEach, test }) => {
-    const workDirPath = path.join(os.tmpdir(), "s3logstore-testworkdir-" + Math.random().toString(36).slice(2));
+    let workDirPath;
     let workDir;
     beforeEach(async () => {
+        workDirPath = path.join(os.tmpdir(), "s3logstore-testworkdir-" + Math.random().toString(36).slice(2));
         await fsp.mkdir(workDirPath);
         workDir = makeWorkDir(workDirPath);
     });

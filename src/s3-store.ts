@@ -6,9 +6,6 @@ export function makeS3Store({ client, bucket, folder }: {
   folder: string
 }) {
   return {
-    bucket,
-    folder,
-
     async getMaxSeqNum(fileName: string): Promise<number> {
       const Prefix = folder + '/' + fileName + '/'
       let result: s3.ListObjectsV2CommandOutput | undefined

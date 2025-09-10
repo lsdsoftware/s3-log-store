@@ -4,10 +4,14 @@ import fsp from "fs/promises";
 import os from "os";
 import path from "path";
 import { makeCheckpointFile } from "./checkpoint-file.js";
-describe('checkpoint-file', ({ beforeEach, test }) => {
-    const filePath = path.join(os.tmpdir(), 's3logstore-testcheckpointfile-' + Math.random().toString(36).slice(2));
-    const file = makeCheckpointFile(filePath);
+describe('checkpoint-file', ({ beforeEach, afterEach, test }) => {
+    let filePath;
+    let file;
     beforeEach(async () => {
+        filePath = path.join(os.tmpdir(), 's3logstore-testcheckpointfile-' + Math.random().toString(36).slice(2));
+        file = makeCheckpointFile(filePath);
+    });
+    afterEach(async () => {
         await fsp.rm(filePath, { force: true });
     });
     test('main', async () => {

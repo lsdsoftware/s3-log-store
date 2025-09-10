@@ -8,8 +8,6 @@ export function makeWorkDir(dirPath: string) {
   fs.statSync(dirPath)
 
   return {
-    dirPath,
-
     async ensureEmpty() {
       const files = await fsp.readdir(dirPath)
       if (files.length)

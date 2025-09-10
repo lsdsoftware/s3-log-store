@@ -4,8 +4,6 @@ export declare function makeS3Store({ client, bucket, folder }: {
     bucket: string;
     folder: string;
 }): {
-    bucket: string;
-    folder: string;
     getMaxSeqNum(fileName: string): Promise<number>;
     putFile(fileName: string, seqNum: number, payload: Buffer): Promise<void>;
     getFile(fileName: string, seqNum: number): Promise<Buffer<ArrayBufferLike>>;
