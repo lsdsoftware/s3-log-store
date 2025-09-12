@@ -7,20 +7,33 @@ import { makeRetrievalCache } from "./retrieval-cache.js";
 describe('retrieval-cache', ({ beforeEach, afterEach, test }) => {
     let cacheFolder;
     let cache;
+    let jobKill$;
     let job$;
-    let jobSub;
     beforeEach(async () => {
         cacheFolder = path.join(os.tmpdir(), 's3logstore-testretrievalcache-' + Math.random().toString(36).slice(2));
         await fsp.mkdir(cacheFolder);
-        cache = makeRetrievalCache({ cacheFolder, tti: 150, cleanupInterval: 100 });
-        job$ = cache.cleanupJob$.pipe(rxjs.share());
-        jobSub = job$.subscribe();
+        cache = makeRetrievalCache({
+            cacheFolder,
+            cleanupInterval: 100,
+            makeAccessTracker() {
+                const tti = 150;
+                let lastAccess = Date.now();
+                return {
+                    notifyAccess: () => lastAccess = Date.now(),
+                    isPurgeable: () => lastAccess + tti <= Date.now()
+                };
+            },
+        });
+        jobKill$ = new rxjs.Subject();
+        job$ = cache.cleanupJob$.pipe(rxjs.takeUntil(jobKill$), rxjs.share({ resetOnRefCountZero: false }));
     });
     afterEach(async () => {
-        jobSub.unsubscribe();
+        jobKill$.next();
         await fsp.rm(cacheFolder, { recursive: true });
     });
     test('main', async () => {
+        //cleanup at startup
+        expect(await rxjs.firstValueFrom(job$), { filesDeleted: [] });
         expect(await cache.get('1'), undefined);
         await cache.set('1', 'uno');
         await cache.set('2', 'dos');

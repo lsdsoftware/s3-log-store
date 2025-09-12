@@ -42,8 +42,15 @@ describe('index', ({ beforeEach, afterEach, test }) => {
             },
             retrievalCacheConfig: {
                 cacheFolder: retrievalCacheFolder,
-                tti: 36 * 3600_000,
-                cleanupInterval: 3600_000
+                cleanupInterval: 3600_000,
+                makeAccessTracker() {
+                    const tti = 36 * 3600_000;
+                    let lastAccess = Date.now();
+                    return {
+                        notifyAccess: () => lastAccess = Date.now(),
+                        isPurgeable: () => lastAccess + tti <= Date.now()
+                    };
+                }
             }
         });
     });

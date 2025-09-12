@@ -7,7 +7,7 @@ import zlib from "zlib"
 import { makeBackupTask } from "./backup-task.js"
 import { makeCheckpointFile } from "./checkpoint-file.js"
 import { makeDeleteInactiveTask } from "./delete-inactive-task.js"
-import { makeRetrievalCache } from "./retrieval-cache.js"
+import { AccessTracker, makeRetrievalCache } from "./retrieval-cache.js"
 import { makeS3Store } from "./s3-store.js"
 import { makeWorkDir } from "./work-dir.js"
 
@@ -29,8 +29,8 @@ export function makeLogStore<T>({
   }
   retrievalCacheConfig: {
     cacheFolder: string
-    tti: number
     cleanupInterval: number
+    makeAccessTracker(): AccessTracker
   }
 }) {
   const workDir = makeWorkDir(workDirConfig.dirPath)

@@ -26,8 +26,11 @@ const logStore = makeLogStore<T>({
   },
   retrievalCacheConfig: {
     cacheFolder: string,
-    tti: number,
     cleanupInterval: number
+    makeAccessTracker(): {
+      notifyAccess(): void
+      isPurgeable(): boolean
+    }
   }
 })
 
@@ -40,4 +43,4 @@ logStore.subscribe(streamId: string): rxjs.Observable<T>
 
 `inactiveTtlDays` specifies the number of days of inactivity (no new entries) before the a stream is considered inactive and its data purged from the local working dataset.
 
-The _retrievalCache_ is a filesystem cache for objects retrieved from S3. Entries are periodically purged if they haven't been accessed for a while as indicated by the `tti` (time-to-idle) parameter.
+The _retrievalCache_ is a filesystem cache for objects retrieved from S3. Entries are purged according to policy set by caller-supplied access trackers.

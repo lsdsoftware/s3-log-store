@@ -1,5 +1,6 @@
 import * as s3 from "@aws-sdk/client-s3";
 import * as rxjs from "rxjs";
+import { AccessTracker } from "./retrieval-cache.js";
 export declare function makeLogStore<T>({ workDirConfig, s3StoreConfig, retrievalCacheConfig, }: {
     workDirConfig: {
         dirPath: string;
@@ -14,8 +15,8 @@ export declare function makeLogStore<T>({ workDirConfig, s3StoreConfig, retrieva
     };
     retrievalCacheConfig: {
         cacheFolder: string;
-        tti: number;
         cleanupInterval: number;
+        makeAccessTracker(): AccessTracker;
     };
 }): {
     syncJob$: rxjs.Observable<{

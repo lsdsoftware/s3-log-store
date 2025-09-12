@@ -3,24 +3,29 @@ import fsp from "fs/promises"
 import path from "path"
 import * as rxjs from "rxjs"
 
-export function makeRetrievalCache({ cacheFolder, tti, cleanupInterval }: {
+export interface AccessTracker {
+  notifyAccess(): void
+  isPurgeable(): boolean
+}
+
+export function makeRetrievalCache({ cacheFolder, cleanupInterval, makeAccessTracker }: {
   cacheFolder: string
-  tti: number
   cleanupInterval: number
+  makeAccessTracker(): AccessTracker
 }) {
   fs.statSync(cacheFolder)
 
-  const lastAccessMap = new Map<string, number>()
+  const accessTrackers = new Map<string, AccessTracker>()
 
   return {
-    cleanupJob$: rxjs.interval(cleanupInterval).pipe(
+    cleanupJob$: rxjs.timer(0, cleanupInterval).pipe(
       rxjs.exhaustMap(cleanup)
     ),
 
     async get(hashKey: string) {
       try {
         const value = await fsp.readFile(path.join(cacheFolder, hashKey), 'utf8')
-        lastAccessMap.set(hashKey, Date.now())
+        accessTrackers.get(hashKey)?.notifyAccess()
         return value
       } catch (err: any) {
         if (err.code != 'ENOENT') throw err
@@ -29,26 +34,24 @@ export function makeRetrievalCache({ cacheFolder, tti, cleanupInterval }: {
 
     async set(hashKey: string, value: string) {
       await fsp.writeFile(path.join(cacheFolder, hashKey), value)
-      lastAccessMap.set(hashKey, Date.now())
+      accessTrackers.set(hashKey, makeAccessTracker())
     }
   }
 
 
   async function cleanup() {
-    const now = Date.now()
     const filesDeleted: string[] = []
     for (const hashKey of await fsp.readdir(cacheFolder)) {
-      const lastAccess = lastAccessMap.get(hashKey)
-      if (lastAccess) {
-        //if entry is idle, remove
-        if (lastAccess + tti <= now) {
+      const tracker = accessTrackers.get(hashKey)
+      if (tracker) {
+        if (tracker.isPurgeable()) {
           await fsp.rm(path.join(cacheFolder, hashKey))
-          lastAccessMap.delete(hashKey)
+          accessTrackers.delete(hashKey)
           filesDeleted.push(hashKey)
         }
       } else {
-        //if entry's lastAccess isn't tracked, e.g. process restart, start tracking
-        lastAccessMap.set(hashKey, now)
+        //if entry isn't currently tracked, e.g. process restart, start tracking
+        accessTrackers.set(hashKey, makeAccessTracker())
       }
     }
     return { filesDeleted }

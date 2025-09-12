@@ -1,8 +1,12 @@
 import * as rxjs from "rxjs";
-export declare function makeRetrievalCache({ cacheFolder, tti, cleanupInterval }: {
+export interface AccessTracker {
+    notifyAccess(): void;
+    isPurgeable(): boolean;
+}
+export declare function makeRetrievalCache({ cacheFolder, cleanupInterval, makeAccessTracker }: {
     cacheFolder: string;
-    tti: number;
     cleanupInterval: number;
+    makeAccessTracker(): AccessTracker;
 }): {
     cleanupJob$: rxjs.Observable<{
         filesDeleted: string[];
