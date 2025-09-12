@@ -48,6 +48,7 @@ export function makeLogStore<T>({
     )
     .cache(retrievalCache)
     .dedupe()
+  const subscriberMap = new Map<string, Set<rxjs.Subscriber<T>>>()
 
   return {
     syncJob$: rxjs.timer(0, syncInterval).pipe(
@@ -63,6 +64,7 @@ export function makeLogStore<T>({
     async append(fileName: string, entry: T) {
       const workFile = workDir.makeWorkFile(fileName)
       await workFile.append(JSON.stringify(entry) + ',\n')
+      subscriberMap.get(fileName)?.forEach(x => x.next(entry))
     },
 
     async retrieve(fileName: string, offset: number, limit: number) {
@@ -82,6 +84,18 @@ export function makeLogStore<T>({
         entries = earlierEntries.concat(entries)
       }
       return entries.slice(-offset-limit, -offset).reverse()
+    },
+
+    subscribe(fileName: string) {
+      return new rxjs.Observable<T>(subscriber => {
+        let subscribers = subscriberMap.get(fileName)
+        if (!subscribers) subscriberMap.set(fileName, subscribers = new Set())
+        subscribers.add(subscriber)
+        return () => {
+          subscribers.delete(subscriber)
+          if (subscribers.size == 0) subscriberMap.delete(fileName)
+        }
+      })
     }
   }
 

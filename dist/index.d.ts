@@ -39,4 +39,5 @@ export declare function makeLogStore<T>({ workDirPath, syncInterval, s3StoreConf
     }>;
     append(fileName: string, entry: T): Promise<void>;
     retrieve(fileName: string, offset: number, limit: number): Promise<T[]>;
+    subscribe(fileName: string): rxjs.Observable<T>;
 };

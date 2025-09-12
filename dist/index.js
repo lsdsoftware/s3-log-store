@@ -21,6 +21,7 @@ export function makeLogStore({ workDirPath, syncInterval, s3StoreConfig, chunkSi
         .then(bytes => bytes.toString()))
         .cache(retrievalCache)
         .dedupe();
+    const subscriberMap = new Map();
     return {
         syncJob$: rxjs.timer(0, syncInterval).pipe(rxjs.exhaustMap(async () => {
             const deleteInactiveStatus = await deleteInactiveTask.run();
@@ -31,6 +32,7 @@ export function makeLogStore({ workDirPath, syncInterval, s3StoreConfig, chunkSi
         async append(fileName, entry) {
             const workFile = workDir.makeWorkFile(fileName);
             await workFile.append(JSON.stringify(entry) + ',\n');
+            subscriberMap.get(fileName)?.forEach(x => x.next(entry));
         },
         async retrieve(fileName, offset, limit) {
             const workFile = workDir.makeWorkFile(fileName);
@@ -50,6 +52,19 @@ export function makeLogStore({ workDirPath, syncInterval, s3StoreConfig, chunkSi
                 entries = earlierEntries.concat(entries);
             }
             return entries.slice(-offset - limit, -offset).reverse();
+        },
+        subscribe(fileName) {
+            return new rxjs.Observable(subscriber => {
+                let subscribers = subscriberMap.get(fileName);
+                if (!subscribers)
+                    subscriberMap.set(fileName, subscribers = new Set());
+                subscribers.add(subscriber);
+                return () => {
+                    subscribers.delete(subscriber);
+                    if (subscribers.size == 0)
+                        subscriberMap.delete(fileName);
+                };
+            });
         }
     };
     function parseChunk(payload) {

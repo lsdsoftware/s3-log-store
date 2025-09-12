@@ -1,11 +1,13 @@
 # s3-log-store
 Use S3 as log-structured store for append-only data streams such as conversation chat logs.
 
-Log entries are JSON-ified and appended to files in a work directory, and periodically sync'd to the configured S3 bucket, broken up into chunks of predefined size.
+Log entries are JSON-ified and appended to files in a work directory.
 
-Entries are retrieved in reverse order, provided offset and limit.
+Log files are periodically synced to an S3 bucket, broken up into chunks of preset size, gzipped.
 
-Consumers can subscribe to a stream to get notified of new entries.
+Entries are retrievable in reverse order, given offset and limit.
+
+Consumers can subscribe to streams to get notification of new entries.
 
 ```typescript
 import { makeLogStore } from '@lsdsoftware/s3-log-store
@@ -35,6 +37,6 @@ logStore.subscribe(streamId: string): rxjs.Observable<T>
 
 `streamId` must be filename safe.
 
-`inactiveTtlDays` specifies the number of days of inactivity (no new entries) before the a stream is considered inactive and purged from the local working dataset.
+`inactiveTtlDays` specifies the number of days of inactivity (no new entries) before the a stream is considered inactive and its data purged from the local working dataset.
 
-The _retrievalCache_ is a time-to-idle filesystem cache that purges items based on how long it's been idle (not accessed), as specified by the `tti` parameter.
+The _retrievalCache_ is a filesystem cache for objects retrieved from S3. Entries are periodically purged if they haven't been accessed for a while as indicated by the `tti` (time-to-idle) parameter.
