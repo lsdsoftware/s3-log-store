@@ -13,16 +13,18 @@ Consumers can subscribe to streams to get notification of new entries.
 import { makeLogStore } from '@lsdsoftware/s3-log-store
 
 const logStore = makeLogStore<T>({
-  workDirPath: string,
-  syncInterval: number,
+  workDirConfig: {
+    dirPath: string,
+    syncInterval: number,
+    chunkSize: number,
+    inactiveTtlDays: number
+  },
   s3Config: {
     profile: string,
     region: string,
     bucket: string,
     folder: string
   },
-  chunkSize: number,
-  inactiveTtlDays: number,
   retrievalCacheConfig: {
     cacheFolder: string,
     tti: number,

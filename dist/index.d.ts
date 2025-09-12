@@ -1,15 +1,17 @@
 import * as s3 from "@aws-sdk/client-s3";
 import * as rxjs from "rxjs";
-export declare function makeLogStore<T>({ workDirPath, syncInterval, s3StoreConfig, chunkSize, inactiveTtlDays, retrievalCacheConfig, }: {
-    workDirPath: string;
-    syncInterval: number;
+export declare function makeLogStore<T>({ workDirConfig, s3StoreConfig, retrievalCacheConfig, }: {
+    workDirConfig: {
+        dirPath: string;
+        syncInterval: number;
+        chunkSize: number;
+        inactiveTtlDays: number;
+    };
     s3StoreConfig: {
         client: s3.S3Client;
         bucket: string;
         folder: string;
     };
-    chunkSize: number;
-    inactiveTtlDays: number;
     retrievalCacheConfig: {
         cacheFolder: string;
         tti: number;

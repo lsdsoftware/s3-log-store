@@ -28,10 +28,12 @@ describe('index', ({ beforeEach, afterEach, test }) => {
         await fsp.mkdir(retrievalCacheFolder);
         s3StoreFolder = 's3logstore-test-' + randStr;
         logStore = makeLogStore({
-            workDirPath,
-            syncInterval: 3600_1000,
-            chunkSize: 150_000,
-            inactiveTtlDays: 7,
+            workDirConfig: {
+                dirPath: workDirPath,
+                syncInterval: 3600_1000,
+                chunkSize: 150_000,
+                inactiveTtlDays: 7
+            },
             s3StoreConfig: {
                 client: s3Client,
                 bucket: s3StoreBucket,

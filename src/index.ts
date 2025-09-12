@@ -12,33 +12,32 @@ import { makeS3Store } from "./s3-store.js"
 import { makeWorkDir } from "./work-dir.js"
 
 export function makeLogStore<T>({
-  workDirPath,
-  syncInterval,
+  workDirConfig,
   s3StoreConfig,
-  chunkSize,
-  inactiveTtlDays,
   retrievalCacheConfig,
 }: {
-  workDirPath: string
-  syncInterval: number
+  workDirConfig: {
+    dirPath: string
+    syncInterval: number
+    chunkSize: number
+    inactiveTtlDays: number
+  }
   s3StoreConfig: {
     client: s3.S3Client
     bucket: string
     folder: string
   }
-  chunkSize: number
-  inactiveTtlDays: number
   retrievalCacheConfig: {
     cacheFolder: string
     tti: number
     cleanupInterval: number
   }
 }) {
-  const workDir = makeWorkDir(workDirPath)
-  const checkpointFile = makeCheckpointFile(path.join(workDirPath, 'checkpoint'))
+  const workDir = makeWorkDir(workDirConfig.dirPath)
+  const checkpointFile = makeCheckpointFile(path.join(workDirConfig.dirPath, 'checkpoint'))
   const s3Store = makeS3Store(s3StoreConfig)
-  const deleteInactiveTask = makeDeleteInactiveTask({ workDir, inactiveTtlDays })
-  const backupTask = makeBackupTask({ workDir, checkpointFile, s3Store, chunkSize })
+  const deleteInactiveTask = makeDeleteInactiveTask({ workDir, inactiveTtlDays: workDirConfig.inactiveTtlDays })
+  const backupTask = makeBackupTask({ workDir, checkpointFile, s3Store, chunkSize: workDirConfig.chunkSize })
 
   const retrievalCache = makeRetrievalCache(retrievalCacheConfig)
   const getChunk = new Fetch(async (key: { fileName: string, seqNum: number, hashKey: string }) =>
@@ -51,7 +50,7 @@ export function makeLogStore<T>({
   const subscriberMap = new Map<string, Set<rxjs.Subscriber<T>>>()
 
   return {
-    syncJob$: rxjs.timer(0, syncInterval).pipe(
+    syncJob$: rxjs.timer(0, workDirConfig.syncInterval).pipe(
       rxjs.exhaustMap(async () => {
         const deleteInactiveStatus = await deleteInactiveTask.run()
         const backupStatus = await backupTask.run()

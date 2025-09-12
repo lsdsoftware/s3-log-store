@@ -9,12 +9,12 @@ import { makeDeleteInactiveTask } from "./delete-inactive-task.js";
 import { makeRetrievalCache } from "./retrieval-cache.js";
 import { makeS3Store } from "./s3-store.js";
 import { makeWorkDir } from "./work-dir.js";
-export function makeLogStore({ workDirPath, syncInterval, s3StoreConfig, chunkSize, inactiveTtlDays, retrievalCacheConfig, }) {
-    const workDir = makeWorkDir(workDirPath);
-    const checkpointFile = makeCheckpointFile(path.join(workDirPath, 'checkpoint'));
+export function makeLogStore({ workDirConfig, s3StoreConfig, retrievalCacheConfig, }) {
+    const workDir = makeWorkDir(workDirConfig.dirPath);
+    const checkpointFile = makeCheckpointFile(path.join(workDirConfig.dirPath, 'checkpoint'));
     const s3Store = makeS3Store(s3StoreConfig);
-    const deleteInactiveTask = makeDeleteInactiveTask({ workDir, inactiveTtlDays });
-    const backupTask = makeBackupTask({ workDir, checkpointFile, s3Store, chunkSize });
+    const deleteInactiveTask = makeDeleteInactiveTask({ workDir, inactiveTtlDays: workDirConfig.inactiveTtlDays });
+    const backupTask = makeBackupTask({ workDir, checkpointFile, s3Store, chunkSize: workDirConfig.chunkSize });
     const retrievalCache = makeRetrievalCache(retrievalCacheConfig);
     const getChunk = new Fetch(async (key) => s3Store.getFile(key.fileName, key.seqNum)
         .then(util.promisify(zlib.gunzip))
@@ -23,7 +23,7 @@ export function makeLogStore({ workDirPath, syncInterval, s3StoreConfig, chunkSi
         .dedupe();
     const subscriberMap = new Map();
     return {
-        syncJob$: rxjs.timer(0, syncInterval).pipe(rxjs.exhaustMap(async () => {
+        syncJob$: rxjs.timer(0, workDirConfig.syncInterval).pipe(rxjs.exhaustMap(async () => {
             const deleteInactiveStatus = await deleteInactiveTask.run();
             const backupStatus = await backupTask.run();
             return { deleteInactiveStatus, backupStatus };
