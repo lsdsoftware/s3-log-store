@@ -1,6 +1,6 @@
 import * as s3 from "@aws-sdk/client-s3";
-export declare function makeS3Store({ client, bucket, folder }: {
-    client: s3.S3Client;
+export declare function makeS3Store({ clientConfig, bucket, folder }: {
+    clientConfig: s3.S3ClientConfig;
     bucket: string;
     folder: string;
 }): {

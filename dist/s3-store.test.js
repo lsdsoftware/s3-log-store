@@ -6,25 +6,26 @@ describe('s3-store', ({ beforeEach, afterEach, test }) => {
     assert(process.env.S3_PROFILE &&
         process.env.S3_REGION &&
         process.env.S3_BUCKET);
-    const client = new s3.S3Client({
+    const config = {
         profile: process.env.S3_PROFILE,
-        region: process.env.S3_REGION
-    });
-    const bucket = process.env.S3_BUCKET;
+        region: process.env.S3_REGION,
+        bucket: process.env.S3_BUCKET
+    };
+    const client = new s3.S3Client(config);
     let folder;
     let store;
     beforeEach(async () => {
         folder = 's3logstore-test-' + Math.random().toString(36).slice(2);
-        store = makeS3Store({ client, bucket, folder });
+        store = makeS3Store({ clientConfig: config, bucket: config.bucket, folder });
     });
     afterEach(async () => {
         const { Contents } = await client.send(new s3.ListObjectsV2Command({
-            Bucket: bucket,
+            Bucket: config.bucket,
             Prefix: folder + '/'
         }));
         if (Contents?.length) {
             await client.send(new s3.DeleteObjectsCommand({
-                Bucket: bucket,
+                Bucket: config.bucket,
                 Delete: { Objects: Contents.map(({ Key }) => ({ Key })) }
             }));
         }

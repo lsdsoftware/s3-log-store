@@ -1,5 +1,6 @@
 import * as s3 from "@aws-sdk/client-s3";
-export function makeS3Store({ client, bucket, folder }) {
+export function makeS3Store({ clientConfig, bucket, folder }) {
+    const client = new s3.S3Client(clientConfig);
     return {
         async getMaxSeqNum(fileName) {
             const Prefix = folder + '/' + fileName + '/';

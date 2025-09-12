@@ -19,9 +19,8 @@ const logStore = makeLogStore<T>({
     chunkSize: number,
     inactiveTtlDays: number
   },
-  s3Config: {
-    profile: string,
-    region: string,
+  s3StoreConfig: {
+    clientConfig: S3ClientConfig,
     bucket: string,
     folder: string
   },

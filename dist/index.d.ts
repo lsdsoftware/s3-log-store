@@ -8,7 +8,7 @@ export declare function makeLogStore<T>({ workDirConfig, s3StoreConfig, retrieva
         inactiveTtlDays: number;
     };
     s3StoreConfig: {
-        client: s3.S3Client;
+        clientConfig: s3.S3ClientConfig;
         bucket: string;
         folder: string;
     };

@@ -15,11 +15,12 @@ describe('index', ({ beforeEach, afterEach, test }) => {
     process.env.S3_REGION &&
     process.env.S3_BUCKET
   )
-  const s3Client = new s3.S3Client({
+  const s3StoreConfig = {
     profile: process.env.S3_PROFILE,
-    region: process.env.S3_REGION
-  })
-  const s3StoreBucket = process.env.S3_BUCKET
+    region: process.env.S3_REGION,
+    bucket: process.env.S3_BUCKET
+  }
+  const s3Client = new s3.S3Client(s3StoreConfig)
 
   let workDirPath: string
   let retrievalCacheFolder: string
@@ -41,8 +42,8 @@ describe('index', ({ beforeEach, afterEach, test }) => {
         inactiveTtlDays: 7
       },
       s3StoreConfig: {
-        client: s3Client,
-        bucket: s3StoreBucket,
+        clientConfig: s3StoreConfig,
+        bucket: s3StoreConfig.bucket,
         folder: s3StoreFolder
       },
       retrievalCacheConfig: {
@@ -57,12 +58,12 @@ describe('index', ({ beforeEach, afterEach, test }) => {
     await fsp.rm(workDirPath, { recursive: true })
     await fsp.rm(retrievalCacheFolder, { recursive: true })
     const { Contents } = await s3Client.send(new s3.ListObjectsV2Command({
-      Bucket: s3StoreBucket,
+      Bucket: s3StoreConfig.bucket,
       Prefix: s3StoreFolder + '/'
     }))
     if (Contents?.length) {
       await s3Client.send(new s3.DeleteObjectsCommand({
-        Bucket: s3StoreBucket,
+        Bucket: s3StoreConfig.bucket,
         Delete: { Objects: Contents.map(({ Key }) => ({ Key })) }
       }))
     }
@@ -72,7 +73,7 @@ describe('index', ({ beforeEach, afterEach, test }) => {
     await logStore.append('aa', 'tres')
     await logStore.append('aa', 'quatro')
     await s3Client.send(new s3.PutObjectCommand({
-      Bucket: s3StoreBucket,
+      Bucket: s3StoreConfig.bucket,
       Key: s3StoreFolder + '/' + 'aa/1',
       Body: await util.promisify(zlib.gzip)(
         JSON.stringify('uno') + ',\n' +
