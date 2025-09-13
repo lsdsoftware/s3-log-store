@@ -89,5 +89,9 @@ describe('index', ({ beforeEach, afterEach, test }) => {
     }))
     expect(await logStore.retrieve('aa', 1, 2), ['tres', 'dos'])
     expect(await logStore.retrieve('aa', 1, 10), ['tres', 'dos', 'uno'])
+
+    //test retrieval when workFile had been deleted due to inactivity
+    await fsp.rm(path.join(workDirPath, 'aa'))
+    expect(await logStore.retrieve('aa', 1, 2), ['uno'])
   })
 })

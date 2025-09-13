@@ -69,6 +69,10 @@ export function makeLogStore<T>({
     async retrieve(fileName: string, offset: number, limit: number) {
       const workFile = workDir.makeWorkFile(fileName)
       const { header, payload } = await workFile.read()
+        .catch(err => {
+          if (err.code == 'ENOENT') return { header: undefined, payload: '' }
+          else throw err
+        })
       let seqNum = header?.seqNum
       let entries = parseChunk(payload)
       while (entries.length < offset + limit) {

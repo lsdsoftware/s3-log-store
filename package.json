@@ -1,6 +1,6 @@
 {
   "name": "@lsdsoftware/s3-log-store",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Efficiently store and retrieve log-structured data (append only) in S3",
   "keywords": [
     "log-structured",
